@@ -8,7 +8,7 @@ steps:
     args:
       - 'build'
       - '-t'
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/finance4all-frontend:${SHORT_SHA}'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/finance4all-frontend:${_IMAGE_TAG}'
       - '-t'
       - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/finance4all-frontend:latest'
       - '--build-arg'
@@ -35,7 +35,7 @@ steps:
       - 'deploy'
       - 'finance4all-frontend-${_ENVIRONMENT}'
       - '--image'
-      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/finance4all-frontend:${SHORT_SHA}'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/finance4all-frontend:${_IMAGE_TAG}'
       - '--region'
       - '${_REGION}'
       - '--platform'
@@ -69,10 +69,11 @@ substitutions:
   _MAX_INSTANCES: '5'
   _MEMORY: '256Mi'
   _CPU: '1'
+  _IMAGE_TAG: 'latest'
 
 # Images to be pushed to Artifact Registry
 images:
-  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/finance4all-frontend:${SHORT_SHA}'
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/finance4all-frontend:${_IMAGE_TAG}'
   - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/finance4all-frontend:latest'
 
 # Build configuration
