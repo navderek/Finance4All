@@ -1,0 +1,91 @@
+# Cloud Build Configuration for Finance4All Frontend
+# This file defines the CI/CD pipeline for building and deploying the frontend service
+
+steps:
+  # Step 1: Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-frontend-image'
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/finance4all-frontend:${SHORT_SHA}'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/finance4all-frontend:latest'
+      - '--build-arg'
+      - 'VITE_BACKEND_URL=${_BACKEND_URL}'
+      - '-f'
+      - 'frontend/Dockerfile'
+      - './frontend'
+
+  # Step 2: Push the Docker image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-frontend-image'
+    args:
+      - 'push'
+      - '--all-tags'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/finance4all-frontend'
+    waitFor: ['build-frontend-image']
+
+  # Step 3: Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-frontend-cloudrun'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'finance4all-frontend-${_ENVIRONMENT}'
+      - '--image'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/finance4all-frontend:${SHORT_SHA}'
+      - '--region'
+      - '${_REGION}'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '8080'
+      - '--set-env-vars'
+      - 'VITE_BACKEND_URL=${_BACKEND_URL}'
+      - '--min-instances'
+      - '${_MIN_INSTANCES}'
+      - '--max-instances'
+      - '${_MAX_INSTANCES}'
+      - '--memory'
+      - '${_MEMORY}'
+      - '--cpu'
+      - '${_CPU}'
+      - '--timeout'
+      - '60s'
+      - '--service-account'
+      - 'finance4all-frontend-${_ENVIRONMENT}@${PROJECT_ID}.iam.gserviceaccount.com'
+    waitFor: ['push-frontend-image']
+
+# Substitution variables (can be overridden in triggers)
+substitutions:
+  _REGION: 'us-central1'
+  _ARTIFACT_REGISTRY_REPO: 'finance4all'
+  _ENVIRONMENT: 'dev'
+  _BACKEND_URL: 'https://finance4all-backend-dev-XXXXXX-uc.a.run.app'
+  _MIN_INSTANCES: '0'
+  _MAX_INSTANCES: '5'
+  _MEMORY: '256Mi'
+  _CPU: '1'
+
+# Images to be pushed to Artifact Registry
+images:
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/finance4all-frontend:${SHORT_SHA}'
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO}/finance4all-frontend:latest'
+
+# Build configuration
+options:
+  machineType: 'N1_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY
+  logStreamingOption: STREAM_ON
+
+# Timeout for the entire build
+timeout: '1200s'
+
+# Tags for organization
+tags:
+  - 'frontend'
+  - 'finance4all'
+  - '${_ENVIRONMENT}'

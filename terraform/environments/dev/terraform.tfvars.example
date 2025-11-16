@@ -1,0 +1,43 @@
+# Finance4All Development Environment Configuration
+# Copy this file to terraform.tfvars and update with your values
+
+# GCP Project Configuration
+project_id       = "finance4all-dev"
+region           = "us-central1"
+zone             = "us-central1-a"
+environment      = "dev"
+credentials_file = "~/.gcp/finance4all-terraform-key.json"
+
+# Networking
+vpc_name    = "finance4all-vpc"
+subnet_cidr = "10.0.0.0/24"
+
+# Database
+db_instance_name = "finance4all-db"
+db_version       = "POSTGRES_15"
+db_tier          = "db-f1-micro"
+db_name          = "finance4all"
+db_user          = "finance4all_user"
+
+# Redis
+redis_instance_name  = "finance4all-cache"
+redis_tier           = "BASIC"
+redis_memory_size_gb = 1
+
+# Storage
+storage_bucket_name         = "finance4all-dev-storage"
+terraform_state_bucket_name = "finance4all-dev-terraform-state"
+
+# Firestore
+firestore_location = "nam5"
+
+# Cloud Run
+backend_service_name  = "finance4all-backend"
+frontend_service_name = "finance4all-frontend"
+
+# Labels
+labels = {
+  environment = "dev"
+  project     = "finance4all"
+  managed_by  = "terraform"
+}
