@@ -83,7 +83,7 @@ Finance4All/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/Finance4All.git
+   git clone https://github.com/navderek/Finance4All.git
    cd Finance4All
    ```
 

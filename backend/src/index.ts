@@ -34,7 +34,7 @@ app.get('/', (_req: Request, res: Response) => {
       health: '/health',
       api: '/api',
     },
-    documentation: 'https://github.com/YOUR_USERNAME/Finance4All',
+    documentation: 'https://github.com/navderek/Finance4All',
   });
 });
 
