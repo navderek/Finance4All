@@ -1,6 +1,17 @@
 import { GraphQLError } from 'graphql';
 import { GraphQLContext } from './context';
 import { GraphQLScalarType, Kind } from 'graphql';
+import {
+  validateInput,
+  createAccountSchema,
+  createTransactionSchema,
+} from '../utils/validation';
+import {
+  calculateNetWorth,
+  calculateCashFlow,
+  calculate30YearProjection,
+  getDateRange,
+} from '../utils/calculations';
 
 // Custom scalar for DateTime
 const DateTimeScalar = new GraphQLScalarType({
@@ -344,6 +355,89 @@ export const resolvers = {
 
       return transaction;
     },
+
+    // Calculation queries
+    netWorth: async (_parent: any, _args: any, context: GraphQLContext) => {
+      if (!context.user) {
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
+      }
+
+      const currentUser = await context.prisma.user.findUnique({
+        where: { firebaseUid: context.user.uid },
+      });
+
+      if (!currentUser) {
+        throw new GraphQLError('User not found', {
+          extensions: { code: 'NOT_FOUND' },
+        });
+      }
+
+      return calculateNetWorth(context.prisma, currentUser.id);
+    },
+
+    cashFlow: async (_parent: any, args: any, context: GraphQLContext) => {
+      if (!context.user) {
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
+      }
+
+      const currentUser = await context.prisma.user.findUnique({
+        where: { firebaseUid: context.user.uid },
+      });
+
+      if (!currentUser) {
+        throw new GraphQLError('User not found', {
+          extensions: { code: 'NOT_FOUND' },
+        });
+      }
+
+      // Default to last 12 months if no dates provided
+      let startDate = args.startDate;
+      let endDate = args.endDate || new Date();
+
+      if (!startDate) {
+        const range = getDateRange(12);
+        startDate = range.startDate;
+      }
+
+      return calculateCashFlow(context.prisma, currentUser.id, startDate, endDate);
+    },
+
+    projection: async (_parent: any, args: any, context: GraphQLContext) => {
+      if (!context.user) {
+        throw new GraphQLError('Not authenticated', {
+          extensions: { code: 'UNAUTHENTICATED' },
+        });
+      }
+
+      const currentUser = await context.prisma.user.findUnique({
+        where: { firebaseUid: context.user.uid },
+      });
+
+      if (!currentUser) {
+        throw new GraphQLError('User not found', {
+          extensions: { code: 'NOT_FOUND' },
+        });
+      }
+
+      const assumptions = {
+        incomeGrowthRate: args.assumptions.incomeGrowthRate,
+        investmentReturn: args.assumptions.investmentReturn,
+        inflationRate: args.assumptions.inflationRate,
+        expectedSalary: args.assumptions.expectedSalary,
+        expectedExpenses: args.assumptions.expectedExpenses,
+      };
+
+      return calculate30YearProjection(
+        context.prisma,
+        currentUser.id,
+        assumptions,
+        args.userAge
+      );
+    },
   },
 
   // Mutations
@@ -444,6 +538,9 @@ export const resolvers = {
         });
       }
 
+      // Validate input
+      const validatedInput = validateInput(createAccountSchema, args.input);
+
       const currentUser = await context.prisma.user.findUnique({
         where: { firebaseUid: context.user.uid },
       });
@@ -457,14 +554,14 @@ export const resolvers = {
       return context.prisma.account.create({
         data: {
           userId: currentUser.id,
-          name: args.input.name,
-          type: args.input.type,
-          subtype: args.input.subtype,
-          balance: args.input.balance,
-          currency: args.input.currency || 'USD',
-          institution: args.input.institution,
-          accountNumber: args.input.accountNumber,
-          interestRate: args.input.interestRate,
+          name: validatedInput.name,
+          type: validatedInput.type,
+          subtype: validatedInput.subtype,
+          balance: validatedInput.balance,
+          currency: validatedInput.currency,
+          institution: validatedInput.institution,
+          accountNumber: validatedInput.accountNumber,
+          interestRate: validatedInput.interestRate,
         },
       });
     },
@@ -665,6 +762,9 @@ export const resolvers = {
         });
       }
 
+      // Validate input
+      const validatedInput = validateInput(createTransactionSchema, args.input);
+
       const currentUser = await context.prisma.user.findUnique({
         where: { firebaseUid: context.user.uid },
       });
@@ -677,7 +777,7 @@ export const resolvers = {
 
       // Verify account ownership
       const account = await context.prisma.account.findUnique({
-        where: { id: args.input.accountId },
+        where: { id: validatedInput.accountId },
       });
 
       if (!account || account.userId !== currentUser.id) {
@@ -689,15 +789,15 @@ export const resolvers = {
       return context.prisma.transaction.create({
         data: {
           userId: currentUser.id,
-          accountId: args.input.accountId,
-          categoryId: args.input.categoryId,
-          amount: args.input.amount,
-          type: args.input.type,
-          description: args.input.description,
-          notes: args.input.notes,
-          date: args.input.date,
-          isRecurring: args.input.isRecurring || false,
-          recurringId: args.input.recurringId,
+          accountId: validatedInput.accountId,
+          categoryId: validatedInput.categoryId,
+          amount: validatedInput.amount,
+          type: validatedInput.type,
+          description: validatedInput.description,
+          notes: validatedInput.notes,
+          date: validatedInput.date,
+          isRecurring: validatedInput.isRecurring,
+          recurringId: validatedInput.recurringId,
         },
       });
     },

@@ -213,6 +213,98 @@ export const typeDefs = gql`
   }
 
   # ============================================
+  # CALCULATION TYPES
+  # ============================================
+
+  type AccountSummary {
+    id: ID!
+    name: String!
+    type: String!
+    balance: Decimal!
+  }
+
+  type NetWorth {
+    totalAssets: Decimal!
+    totalInvestments: Decimal!
+    totalDebts: Decimal!
+    totalLiabilities: Decimal!
+    netWorth: Decimal!
+    accounts: [AccountSummary!]!
+    calculatedAt: DateTime!
+  }
+
+  type CategoryBreakdown {
+    categoryId: ID
+    categoryName: String!
+    amount: Decimal!
+  }
+
+  type MonthlyBreakdown {
+    month: String!
+    income: Decimal!
+    expenses: Decimal!
+    netCashFlow: Decimal!
+  }
+
+  type CashFlow {
+    period: DateRange!
+    totalIncome: Decimal!
+    totalExpenses: Decimal!
+    netCashFlow: Decimal!
+    incomeByCategory: [CategoryBreakdown!]!
+    expensesByCategory: [CategoryBreakdown!]!
+    monthlyBreakdown: [MonthlyBreakdown!]!
+    calculatedAt: DateTime!
+  }
+
+  type DateRange {
+    startDate: DateTime!
+    endDate: DateTime!
+  }
+
+  input ProjectionAssumptionsInput {
+    incomeGrowthRate: Decimal!
+    investmentReturn: Decimal!
+    inflationRate: Decimal!
+    expectedSalary: Decimal
+    expectedExpenses: Decimal
+  }
+
+  type ProjectionAssumptions {
+    incomeGrowthRate: Decimal!
+    investmentReturn: Decimal!
+    inflationRate: Decimal!
+    expectedSalary: Decimal
+    expectedExpenses: Decimal
+  }
+
+  type ProjectionYearData {
+    year: Int!
+    age: Int
+    netWorth: Decimal!
+    totalAssets: Decimal!
+    totalInvestments: Decimal!
+    totalDebts: Decimal!
+    annualIncome: Decimal!
+    annualExpenses: Decimal!
+    annualSavings: Decimal!
+  }
+
+  type ProjectionMilestones {
+    debtFreeYear: Int
+    millionaireYear: Int
+    retirementReadyYear: Int
+  }
+
+  type Projection {
+    assumptions: ProjectionAssumptions!
+    currentNetWorth: Decimal!
+    projectedYears: [ProjectionYearData!]!
+    milestones: ProjectionMilestones!
+    calculatedAt: DateTime!
+  }
+
+  # ============================================
   # QUERY
   # ============================================
 
@@ -239,6 +331,14 @@ export const typeDefs = gql`
       pagination: PaginationInput
     ): TransactionConnection!
     transaction(id: ID!): Transaction
+
+    # Calculation queries
+    netWorth: NetWorth!
+    cashFlow(startDate: DateTime, endDate: DateTime): CashFlow!
+    projection(
+      assumptions: ProjectionAssumptionsInput!
+      userAge: Int
+    ): Projection!
   }
 
   # ============================================

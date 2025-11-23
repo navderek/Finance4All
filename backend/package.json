@@ -1,6 +1,6 @@
 {
   "name": "finance4all-backend",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "description": "Finance4All Backend API",
   "main": "dist/index.js",
   "scripts": {
