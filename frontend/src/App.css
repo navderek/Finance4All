@@ -2,17 +2,17 @@
 
 :root {
   /* Gemini Color Palette */
-  --gemini-blue: #1A73E8;
-  --gemini-purple: #A142F4;
-  --gemini-green: #34A853;
-  --gemini-yellow: #FBBC04;
-  --gemini-red: #EA4335;
+  --gemini-blue: #1a73e8;
+  --gemini-purple: #a142f4;
+  --gemini-green: #34a853;
+  --gemini-yellow: #fbbc04;
+  --gemini-red: #ea4335;
 
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #F8F9FA;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
   --text-primary: #202124;
-  --text-secondary: #5F6368;
-  --border-color: #DADCE0;
+  --text-secondary: #5f6368;
+  --border-color: #dadce0;
 }
 
 * {
@@ -22,8 +22,19 @@
 }
 
 body {
-  font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family:
+    'Google Sans',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'Roboto',
+    'Oxygen',
+    'Ubuntu',
+    'Cantarell',
+    'Fira Sans',
+    'Droid Sans',
+    'Helvetica Neue',
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: var(--bg-secondary);
@@ -77,14 +88,18 @@ body {
   background: var(--bg-primary);
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.24);
   transition: box-shadow 0.3s ease;
 }
 
 .status-card:hover,
 .features-card:hover,
 .tech-stack:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    0 2px 4px rgba(0, 0, 0, 0.12);
 }
 
 .status-card h2,
@@ -125,17 +140,17 @@ body {
 }
 
 .status-ok {
-  background: #E8F5E9;
+  background: #e8f5e9;
   color: var(--gemini-green);
 }
 
 .status-error {
-  background: #FFEBEE;
+  background: #ffebee;
   color: var(--gemini-red);
 }
 
 .status-loading {
-  background: #FFF3E0;
+  background: #fff3e0;
   color: var(--gemini-yellow);
 }
 
@@ -151,12 +166,14 @@ body {
   background: var(--bg-secondary);
   border-radius: 8px;
   border-left: 4px solid var(--gemini-purple);
-  transition: transform 0.2s ease, background 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
 }
 
 .features-list li:hover {
   transform: translateX(4px);
-  background: #F3E8FF;
+  background: #f3e8ff;
 }
 
 .features-list li::before {
@@ -182,7 +199,9 @@ body {
   border-radius: 20px;
   font-size: 0.9rem;
   font-weight: 500;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .badge:hover {

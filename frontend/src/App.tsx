@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import './App.css'
+import { useState, useEffect } from 'react';
+import './App.css';
 
 interface HealthStatus {
   status: string;
@@ -18,12 +18,12 @@ function App() {
 
   useEffect(() => {
     fetch(`${backendUrl}/health`)
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setApiHealth(data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         setError('Backend API is not running');
         setLoading(false);
         console.error('Failed to fetch API health:', err);
@@ -51,9 +51,7 @@ function App() {
               {!loading && apiHealth && (
                 <span className="status-value status-ok">{apiHealth.status}</span>
               )}
-              {!loading && error && (
-                <span className="status-value status-error">{error}</span>
-              )}
+              {!loading && error && <span className="status-value status-error">{error}</span>}
             </div>
             {apiHealth && (
               <>
@@ -101,7 +99,7 @@ function App() {
         <p>Finance4All v0.1.0 | Phase 0: Infrastructure Setup</p>
       </footer>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
