@@ -1,0 +1,120 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: finance4all-postgres
+    environment:
+      POSTGRES_DB: finance4all
+      POSTGRES_USER: finance4all_user
+      POSTGRES_PASSWORD: local_dev_password_change_in_prod
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - finance4all-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finance4all_user -d finance4all"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: finance4all-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - finance4all-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+  # Firestore Emulator
+  firestore-emulator:
+    image: andreysenov/firebase-tools:latest
+    container_name: finance4all-firestore-emulator
+    ports:
+      - "8080:8080"  # Firestore emulator
+      - "9099:9099"  # Firestore UI
+    volumes:
+      - ./firebase.json:/home/node/firebase.json
+    working_dir: /home/node
+    networks:
+      - finance4all-network
+    command: firebase emulators:start --only firestore --project finance4all-dev
+    restart: unless-stopped
+
+  # Backend API Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: finance4all-backend
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - DATABASE_URL=postgresql://finance4all_user:local_dev_password_change_in_prod@postgres:5432/finance4all
+      - REDIS_URL=redis://redis:6379
+      - FIRESTORE_EMULATOR_HOST=firestore-emulator:8080
+      - GCP_PROJECT_ID=finance4all-dev
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - /app/dist
+    networks:
+      - finance4all-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: npm run dev
+    restart: unless-stopped
+
+  # Frontend Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: finance4all-frontend
+    environment:
+      - NODE_ENV=development
+      - VITE_BACKEND_URL=http://localhost:4000
+      - VITE_FIRESTORE_EMULATOR_HOST=localhost:8080
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - finance4all-network
+    depends_on:
+      - backend
+    command: npm run dev -- --host 0.0.0.0
+    restart: unless-stopped
+
+networks:
+  finance4all-network:
+    driver: bridge
+    name: finance4all-network
+
+volumes:
+  postgres_data:
+    name: finance4all-postgres-data
+  redis_data:
+    name: finance4all-redis-data

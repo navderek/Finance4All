@@ -1,0 +1,232 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// USER MODEL
+// ============================================
+
+model User {
+  id            String        @id @default(uuid())
+  firebaseUid   String        @unique @map("firebase_uid")
+  email         String        @unique
+  displayName   String?       @map("display_name")
+  photoUrl      String?       @map("photo_url")
+  role          UserRole      @default(USER)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  accounts      Account[]
+  transactions  Transaction[]
+  categories    Category[]
+  budgets       Budget[]
+  projections   Projection[]
+  auditLogs     AuditLog[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+// ============================================
+// ACCOUNT MODEL (Assets, Investments, Debts)
+// ============================================
+
+model Account {
+  id            String       @id @default(uuid())
+  userId        String       @map("user_id")
+  name          String
+  type          AccountType
+  subtype       String?      // e.g., "Checking", "401k", "Credit Card"
+  balance       Decimal      @db.Decimal(15, 2)
+  currency      String       @default("USD")
+  institution   String?      // Bank or institution name
+  accountNumber String?      @map("account_number") // Last 4 digits only
+  interestRate  Decimal?     @map("interest_rate") @db.Decimal(5, 2) // For debts and savings
+  isActive      Boolean      @default(true) @map("is_active")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions  Transaction[]
+
+  @@index([userId])
+  @@index([type])
+  @@map("accounts")
+}
+
+enum AccountType {
+  ASSET          // Cash, savings, checking
+  INVESTMENT     // Stocks, bonds, retirement accounts
+  DEBT           // Credit cards, loans, mortgages
+  LIABILITY      // Other liabilities
+}
+
+// ============================================
+// CATEGORY MODEL
+// ============================================
+
+model Category {
+  id            String        @id @default(uuid())
+  userId        String        @map("user_id")
+  name          String
+  type          CategoryType
+  color         String?       // Hex color for UI
+  icon          String?       // Icon identifier
+  isDefault     Boolean       @default(false) @map("is_default") // System categories
+  parentId      String?       @map("parent_id") // For subcategories
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent        Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children      Category[]    @relation("CategoryHierarchy")
+  transactions  Transaction[]
+  budgets       Budget[]
+
+  @@index([userId])
+  @@index([type])
+  @@map("categories")
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+// ============================================
+// TRANSACTION MODEL
+// ============================================
+
+model Transaction {
+  id            String          @id @default(uuid())
+  userId        String          @map("user_id")
+  accountId     String          @map("account_id")
+  categoryId    String?         @map("category_id")
+  amount        Decimal         @db.Decimal(15, 2)
+  type          TransactionType
+  description   String?
+  notes         String?
+  date          DateTime
+  isRecurring   Boolean         @default(false) @map("is_recurring")
+  recurringId   String?         @map("recurring_id") // Groups recurring transactions
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account       Account         @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  category      Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([accountId])
+  @@index([categoryId])
+  @@index([type])
+  @@index([date])
+  @@map("transactions")
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+// ============================================
+// BUDGET MODEL
+// ============================================
+
+model Budget {
+  id            String      @id @default(uuid())
+  userId        String      @map("user_id")
+  categoryId    String      @map("category_id")
+  amount        Decimal     @db.Decimal(15, 2)
+  period        BudgetPeriod
+  startDate     DateTime    @map("start_date")
+  endDate       DateTime?   @map("end_date")
+  isActive      Boolean     @default(true) @map("is_active")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category      Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([period])
+  @@map("budgets")
+}
+
+enum BudgetPeriod {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+// ============================================
+// PROJECTION MODEL (30-year forecasts)
+// ============================================
+
+model Projection {
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
+  name              String
+  description       String?
+
+  // Assumptions
+  incomeGrowthRate  Decimal  @map("income_growth_rate") @db.Decimal(5, 2) // % per year
+  investmentReturn  Decimal  @map("investment_return") @db.Decimal(5, 2) // % per year
+  inflationRate     Decimal  @map("inflation_rate") @db.Decimal(5, 2) // % per year
+
+  // Projection data (stored as JSON)
+  projectionData    Json     @map("projection_data") // Array of {year, netWorth, income, expenses}
+
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("projections")
+}
+
+// ============================================
+// AUDIT LOG MODEL (Change tracking)
+// ============================================
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  entityType    String   @map("entity_type") // e.g., "Transaction", "Account"
+  entityId      String   @map("entity_id")
+  action        String   // e.g., "CREATE", "UPDATE", "DELETE"
+  changes       Json?    // Before/after data
+  ipAddress     String?  @map("ip_address")
+  userAgent     String?  @map("user_agent")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
