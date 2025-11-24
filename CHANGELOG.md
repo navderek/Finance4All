@@ -7,6 +7,114 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.4.0] - 2025-11-23
+
+### Added - Accounts Management UI (Step 2.9)
+- **Account Components (6 components):**
+  - `AccountBadge.tsx` - Account type badge with icon and color coding
+  - `AccountCard.tsx` - Animated account summary card with Framer Motion
+  - `AccountsList.tsx` - Main list with filtering, sorting, search, and pagination
+  - `AccountForm.tsx` - Full form with React Hook Form + Zod validation
+  - `AccountDetail.tsx` - Detailed view dialog with all account information
+  - `DeleteAccountDialog.tsx` - Confirmation dialog for account deletion
+
+- **Account Features:**
+  - Full CRUD operations (Create, Read, Update, Delete)
+  - Search by name and institution
+  - Filter by type (18 account types) and category (ASSET, LIABILITY, INVESTMENT)
+  - Sort by name, type, balance, or creation date
+  - Grid/List view toggle
+  - Pagination support
+  - Form validation with Zod schemas
+  - Mock data for development (4 sample accounts)
+  - Animated grid with stagger effects
+  - Responsive design (mobile, tablet, desktop)
+
+- **Accounts Page:**
+  - `frontend/src/pages/accounts/AccountsPage.tsx` - Full page with CRUD operations
+  - Integrated all account components
+  - State management for dialogs
+  - Handler functions for all operations
+  - Added `/accounts` route to App.tsx
+
+- **Account Tests (6 test files):**
+  - `AccountBadge.test.tsx` - Badge rendering tests
+  - `AccountCard.test.tsx` - Card rendering and action tests
+  - `AccountsList.test.tsx` - List filtering, sorting, search tests
+  - `AccountForm.test.tsx` - Form validation and submission tests
+  - `AccountDetail.test.tsx` - Detail view and actions tests
+  - `DeleteAccountDialog.test.tsx` - Confirmation dialog tests
+  - 83 tests total, 75 passing (90% pass rate)
+
+### Added - Transaction Entry UI (Step 2.10)
+- **Transaction Types & Categories:**
+  - `frontend/src/types/transaction.ts` - Transaction types and validation
+  - TransactionType enum (INCOME, EXPENSE)
+  - 20+ predefined categories with icons and colors:
+    - Income: Salary, Freelance, Investment, Gift, Refund, Other
+    - Expense: Housing, Transportation, Food, Groceries, Utilities, Healthcare, Entertainment, Shopping, Education, Insurance, Personal Care, Subscriptions, Travel, Other
+  - Zod validation schemas (transactionSchema, transactionFormSchema)
+  - Helper functions (getCategoryIcon, getCategoryColor, filterCategoriesByType)
+
+- **Transaction Components (6 components):**
+  - `CategoryBadge.tsx` - Category display with icon and color
+  - `TransactionTypeBadge.tsx` - Income/Expense type indicator
+  - `TransactionCard.tsx` - Transaction summary card with all details
+  - `TransactionForm.tsx` - Full form with date picker and validation
+  - `TransactionsList.tsx` - Advanced list with filtering and pagination
+  - `QuickAddTransaction.tsx` - Simplified quick-entry modal
+
+- **Transaction Features:**
+  - Full CRUD operations
+  - Advanced filtering:
+    - Search by description
+    - Filter by type (All, Income, Expense)
+    - Filter by category (multi-select)
+    - Filter by account (multi-select)
+  - Sorting by date, amount, or description (ascending/descending)
+  - Pagination (12 items per page)
+  - Tags support with #hashtags
+  - Date picker integration (@mui/x-date-pickers + date-fns)
+  - Floating Action Button (FAB) for quick add
+  - Mock data for development (5 sample transactions)
+  - Animated grid layout with stagger
+  - Responsive design
+
+- **Transactions Page:**
+  - `frontend/src/pages/transactions/TransactionsPage.tsx` - Full page with CRUD operations
+  - Integrated all transaction components
+  - State management for form and quick-add dialogs
+  - Handler functions for all operations
+  - Added `/transactions` route to App.tsx
+
+### Changed
+- **Frontend:**
+  - Updated `frontend/src/App.tsx` to include `/accounts` and `/transactions` routes
+  - Updated application routing with new pages
+
+### Fixed
+- **Account Components:**
+  - Removed nested Typography in DialogTitle to fix hydration errors
+  - Used specific role-based selectors for elements with duplicate text
+  - Updated MUI class selectors to match MUI v5 patterns
+  - Used regex patterns for flexible error message matching in tests
+  - Simplified toggle button tests
+
+### Tested
+- **Account Management:**
+  - 83 tests for account components
+  - 75 passing (90% pass rate)
+  - Coverage: rendering, interactions, validation, filtering, sorting, search
+
+- **Transaction Management:**
+  - Component rendering and interactions
+  - Form validation and submission
+  - Filtering and sorting
+  - Date picker integration
+  - Tag management
+
+---
+
 ## [0.2.1] - 2025-11-16
 
 ### Added - Monitoring & Observability (Step 0.4)
