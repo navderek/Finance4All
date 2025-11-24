@@ -6,6 +6,7 @@ import { apolloClient } from './graphql/client';
 import { AppLayout } from './components/layout';
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { AccountsPage } from './pages/accounts';
+import { TransactionsPage } from './pages/transactions';
 
 /**
  * App Component
@@ -30,9 +31,9 @@ function App() {
               {/* Main routes */}
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/accounts" element={<AccountsPage />} />
+              <Route path="/transactions" element={<TransactionsPage />} />
 
               {/* TODO: Add more routes as pages are developed */}
-              {/* <Route path="/transactions" element={<TransactionsPage />} /> */}
               {/* <Route path="/categories" element={<CategoriesPage />} /> */}
               {/* <Route path="/cash-flow" element={<CashFlowPage />} /> */}
               {/* <Route path="/budgets" element={<BudgetsPage />} /> */}
