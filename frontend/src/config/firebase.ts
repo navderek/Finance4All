@@ -1,14 +1,16 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, Firestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { env } from './env';
 
 /**
  * Firebase Configuration
- * Initializes Firebase app and authentication
+ * Initializes Firebase app, authentication, and Firestore
  */
 
 let firebaseApp: FirebaseApp | null = null;
 let firebaseAuth: Auth | null = null;
+let firebaseFirestore: Firestore | null = null;
 
 export const initializeFirebase = (): FirebaseApp => {
   if (firebaseApp) {
@@ -54,8 +56,28 @@ export const getFirebaseAuth = (): Auth => {
   return firebaseAuth;
 };
 
+export const getFirebaseFirestore = (): Firestore => {
+  if (!firebaseFirestore) {
+    const app = initializeFirebase();
+    firebaseFirestore = getFirestore(app);
+
+    // Connect to emulator in development
+    if (env.nodeEnv === 'development' && env.firebase.useEmulator) {
+      try {
+        connectFirestoreEmulator(firebaseFirestore, 'localhost', 8080);
+        console.log('🔧 Connected to Firestore Emulator');
+      } catch (error) {
+        console.warn('Failed to connect to Firestore Emulator:', error);
+      }
+    }
+  }
+
+  return firebaseFirestore;
+};
+
 // Export initialized instances
 export const firebase = {
   app: () => initializeFirebase(),
   auth: () => getFirebaseAuth(),
+  firestore: () => getFirebaseFirestore(),
 };

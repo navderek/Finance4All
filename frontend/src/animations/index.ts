@@ -27,6 +27,10 @@ export type {
 export { CountUp } from './CountUp';
 export type { CountUpProps } from './CountUp';
 
+// Pulse Component
+export { Pulse } from './Pulse';
+export type { PulseProps } from './Pulse';
+
 // Animation Hooks
 export {
   useInView,
