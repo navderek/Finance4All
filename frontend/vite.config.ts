@@ -17,6 +17,8 @@ export default defineConfig({
       '@types': path.resolve(__dirname, './src/types'),
       '@theme': path.resolve(__dirname, './src/theme'),
       '@config': path.resolve(__dirname, './src/config'),
+      '@animations': path.resolve(__dirname, './src/animations'),
+      '@graphql': path.resolve(__dirname, './src/graphql'),
     },
   },
   server: {
